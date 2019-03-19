@@ -1,0 +1,80 @@
+#include <SoftwareSerial.h>
+#include <stdlib.h>
+String apiKey ="VJQW0JZL982EXS1G";   
+SoftwareSerial Ser(9, 10); // RX, TX
+const int irPin = 2;     
+const int ledPin =  13;     
+int irState = 0;         
+int bS=1;
+void setup() {
+   Ser.begin(9600);
+   Serial.begin(9600);
+  Ser.println("AT+RST");
+
+  pinMode(irPin, INPUT);
+   pinMode(6, OUTPUT);
+   pinMode(7, OUTPUT);
+}
+
+void loop() {
+    irState = digitalRead(irPin);
+
+ 
+  if (irState == LOW) {
+  digitalWrite(6,HIGH);                                  
+  digitalWrite(7,LOW);   
+  } else {
+ 
+   digitalWrite(6,HIGH);                                 
+   digitalWrite(7,HIGH); 
+  }
+
+  stocloud(bS);
+}
+
+
+void stocloud(int bS)
+  {
+  String state1=String(bS);
+if(irState==HIGH)
+{
+  String s=String('ON');
+}
+else
+{
+  String s=String('OFF');
+}
+  
+  
+  
+  // TCP connection
+  String cmd = "AT+CIPSTART=\"TCP\",\"";
+  cmd += "184.106.153.149"; // api.thingspeak.com
+  cmd += "\",80";
+  Ser.println(cmd);
+  //Serial.println(cmd);
+   
+  if(Ser.find("Error")){
+  //  Serialial.println("AT+CIPSTART error");
+    return;
+  }
+  
+  String getStr = "GET /update/api_key=";
+  getStr += apiKey;  getStr +="&field1=";
+  getStr += String(state1);
+   getStr += "\r\n\r\n";
+
+  // send data length
+  cmd = "AT+CIPSEND=";
+  cmd += String(getStr.length());
+  Ser.println(cmd);
+// Serial.println(cmd);
+
+  else{
+    Ser.println("AT+CIPCLOSE");  }
+  
+}
+
+
+
+
